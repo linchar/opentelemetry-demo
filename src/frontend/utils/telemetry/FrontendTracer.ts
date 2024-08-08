@@ -19,6 +19,10 @@ const {
   IS_SYNTHETIC_REQUEST = '',
 } = typeof window !== 'undefined' ? window.ENV : {};
 
+const { JaegerRemoteSampler } = require('@opentelemetry/sampler-jaeger-remote');
+// Jaeger agent endpoint
+const sampler = new JaegerRemoteSampler();
+
 const FrontendTracer = (collectorString: string) => {
   let resource = new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
@@ -26,7 +30,7 @@ const FrontendTracer = (collectorString: string) => {
 
   const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
   resource = resource.merge(detectedResources);
-  const provider = new WebTracerProvider({ resource });
+  const provider = new WebTracerProvider({ resource, sampler });
 
   provider.addSpanProcessor(new SessionIdProcessor());
 
