@@ -5,6 +5,7 @@
 FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 
+COPY ./src/sampler-jaeger-remote /sampler-jaeger-remote
 WORKDIR /app
 
 COPY ./src/frontend/package*.json ./
@@ -16,6 +17,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY ./pb ./pb
 COPY ./src/frontend .
+COPY ./src/sampler-jaeger-remote /sampler-jaeger-remote
 
 RUN npm run grpc:generate
 RUN npm run build
@@ -29,6 +31,8 @@ ENV NODE_ENV=production
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
+
+COPY ./src/sampler-jaeger-remote /sampler-jaeger-remote
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/utils/telemetry/Instrumentation.js ./
 COPY --from=builder /app/public ./public
