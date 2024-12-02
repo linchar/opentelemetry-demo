@@ -61,6 +61,9 @@ const FrontendTracer = (collectorString: string) => {
             span.setAttribute('app.synthetic_request', IS_SYNTHETIC_REQUEST);
           },
         },
+        '@opentelemetry/instrumentation-user-interaction': {
+          eventNames: ["load", "loadeddata", "loadedmetadata", "loadstart"]
+        },
       }),
     ],
   });
