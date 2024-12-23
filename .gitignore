@@ -36,6 +36,7 @@ composer.lock
 .venv
 .dockerhub.env
 .ghcr.env
+.env.override
 
 src/frontend/cypress/videos
 src/frontend/cypress/screenshots
