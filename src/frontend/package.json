@@ -22,7 +22,7 @@
     "@opentelemetry/core": "1.25.1",
     "@opentelemetry/exporter-metrics-otlp-grpc": "0.52.1",
     "@opentelemetry/exporter-trace-otlp-grpc": "0.52.1",
-    "@opentelemetry/exporter-trace-otlp-http": "0.52.1",
+    "@opentelemetry/exporter-trace-otlp-http": "0.56.0",
     "@opentelemetry/instrumentation": "0.52.1",
     "@opentelemetry/resource-detector-alibaba-cloud": "0.28.10",
     "@opentelemetry/resource-detector-aws": "1.5.2",
@@ -45,7 +45,8 @@
     "sharp": "0.33.4",
     "styled-components": "6.1.11",
     "ts-proto": "1.181.1",
-    "uuid": "10.0.0"
+    "uuid": "10.0.0",
+    "web-vitals": "4.2.4"
   },
   "devDependencies": {
     "@types/node": "20.14.10",
