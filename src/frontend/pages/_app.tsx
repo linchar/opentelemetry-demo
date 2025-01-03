@@ -4,7 +4,6 @@
 import '../styles/globals.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App, { AppContext, AppProps } from 'next/app';
-import { getCookie } from 'cookies-next';
 import CurrencyProvider from '../providers/Currency.provider';
 import CartProvider from '../providers/Cart.provider';
 import { ThemeProvider } from 'styled-components';
@@ -20,14 +19,14 @@ declare global {
       NEXT_PUBLIC_PLATFORM?: string;
       NEXT_PUBLIC_OTEL_SERVICE_NAME?: string;
       NEXT_PUBLIC_OTEL_EXPORTER_OTLP_TRACES_ENDPOINT?: string;
+      NEXT_PUBLIC_OTEL_EXPORTER_OTLP_METRICS_ENDPOINT?: string;
       IS_SYNTHETIC_REQUEST?: string;
     };
   }
 }
 
 if (typeof window !== 'undefined') {
-  const collector = getCookie('otelCollectorUrl')?.toString() || '';
-  FrontendTracer(collector);
+  FrontendTracer();
   if (window.location) {
     const session = SessionGateway.getSession();
 
@@ -41,7 +40,7 @@ if (typeof window !== 'undefined') {
       const useTLS = window.location.protocol === 'https:';
       let port = useTLS ? 443 : 80;
       if (window.location.port) {
-          port = parseInt(window.location.port, 10);
+        port = parseInt(window.location.port, 10);
       }
 
       OpenFeature.setProvider(
