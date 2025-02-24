@@ -19,6 +19,8 @@ import AdProvider from '../../../providers/Ad.provider';
 import { useCart } from '../../../providers/Cart.provider';
 import * as S from '../../../styles/ProductDetail.styled';
 import { useCurrency } from '../../../providers/Currency.provider';
+import { onCLS, onINP, onLCP, onTTFB, onFCP } from 'web-vitals';
+import { handleWebVitals } from '../../../utils/telemetry/InstrumentWebVitals';
 
 const quantityOptions = new Array(10).fill(0).map((_, i) => i + 1);
 
@@ -35,6 +37,15 @@ const ProductDetail: NextPage = () => {
   useEffect(() => {
     setQuantity(1);
   }, [productId]);
+
+  // console.log('collect core web vitals in product');
+  useEffect(() => {
+    onCLS(handleWebVitals);
+    onINP(handleWebVitals);
+    onLCP(handleWebVitals);
+    onTTFB(handleWebVitals);
+    onFCP(handleWebVitals);
+  }, []);
 
   const {
     data: {
