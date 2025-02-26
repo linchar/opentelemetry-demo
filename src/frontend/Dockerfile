@@ -13,6 +13,11 @@ RUN npm clean-install --no-audit --no-progress
 COPY ./src/frontend/protos ./protos
 COPY ./src/frontend .
 
+# Ensure the node user has write permissions to /app/.next
+USER root
+RUN chown -R node:node /app/.next
+USER node
+
 RUN npm run build
 
 FROM node:22-alpine AS deps
