@@ -7,7 +7,7 @@ import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
 import { Resource, browserDetector } from '@opentelemetry/resources';
-import { SEMRESATTRS_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { ATTR_SERVICE_NAME, SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SessionIdProcessor } from './SessionIdProcessor';
 import { detectResourcesSync } from '@opentelemetry/resources/build/src/detect-resources';
@@ -18,11 +18,25 @@ const {
   IS_SYNTHETIC_REQUEST = '',
 } = typeof window !== 'undefined' ? window.ENV : {};
 
+// use public service to get ip address
+let cachedIP: string = '';
+async function getIP(): Promise<string> {
+  if (cachedIP != '') {
+    return cachedIP;
+  }
+  const response = await fetch('https://api.ipify.org?format=json');
+  const data = await response.json();
+  cachedIP = data.ip;
+  return cachedIP;
+}
+
 const FrontendTracer = async () => {
   const { ZoneContextManager } = await import('@opentelemetry/context-zone');
 
   let resource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
+    [ATTR_SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
+    [SEMRESATTRS_SERVICE_INSTANCE_ID]:
+      typeof window !== 'undefined' ? await getIP() : "unknown ip",
   });
   const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
   resource = resource.merge(detectedResources);
