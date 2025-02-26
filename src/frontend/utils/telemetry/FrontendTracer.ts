@@ -40,6 +40,9 @@ const FrontendTracer = () => {
 
   const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
   resource = resource.merge(detectedResources);
+  // use resource in other files
+  export const frontendResource = resource;
+
   const provider = new WebTracerProvider({ resource });
 
   provider.addSpanProcessor(new SessionIdProcessor());
