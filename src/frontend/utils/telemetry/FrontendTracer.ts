@@ -19,9 +19,23 @@ const {
   IS_SYNTHETIC_REQUEST = '',
 } = typeof window !== 'undefined' ? window.ENV : {};
 
+// use public service to get ip address
+let cachedIP: string = '';
+async function getIP(): Promise<string> {
+  if (cachedIP != '') {
+    return cachedIP;
+  }
+  const response = await fetch('https://api.ipify.org?format=json');
+  const data = await response.json();
+  cachedIP = data.ip;
+  return cachedIP;
+}
+
 const FrontendTracer = () => {
   let resource = new Resource({
     [SemanticResourceAttributes.SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
+    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]:
+      typeof window !== 'undefined' ? await getIP() : "unknown ip",
   });
 
   const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
