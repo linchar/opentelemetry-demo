@@ -53,3 +53,4 @@ test/tracetesting/tracetesting-vars.yaml
 
 !src/currency/build
 src/frontend/.env.sentry-build-plugin
+.env.override
