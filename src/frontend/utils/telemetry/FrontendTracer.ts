@@ -31,18 +31,20 @@ async function getIP(): Promise<string> {
   return cachedIP;
 }
 
+// move from within FrontendTracer because 'await' expressions are only allowed within async functions 
+// and at the top levels of modules.
+let resource = new Resource({
+  [SemanticResourceAttributes.SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
+  [SemanticResourceAttributes.SERVICE_INSTANCE_ID]:
+    typeof window !== 'undefined' ? await getIP() : "unknown ip",
+});
+
+const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
+resource = resource.merge(detectedResources);
+// use resource in InstrumentWebVitals files
+export const frontendResource = resource;
+
 const FrontendTracer = () => {
-  let resource = new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
-    [SemanticResourceAttributes.SERVICE_INSTANCE_ID]:
-      typeof window !== 'undefined' ? await getIP() : "unknown ip",
-  });
-
-  const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
-  resource = resource.merge(detectedResources);
-  // use resource in other files
-  export const frontendResource = resource;
-
   const provider = new WebTracerProvider({ resource });
 
   provider.addSpanProcessor(new SessionIdProcessor());
