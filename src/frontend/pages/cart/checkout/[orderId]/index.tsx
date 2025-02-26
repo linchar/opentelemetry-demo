@@ -14,10 +14,22 @@ import Recommendations from '../../../../components/Recommendations';
 import AdProvider from '../../../../providers/Ad.provider';
 import * as S from '../../../../styles/Checkout.styled';
 import { IProductCheckout } from '../../../../types/Cart';
+import { useEffect } from 'react';
+import { onCLS, onINP, onLCP, onTTFB, onFCP } from 'web-vitals';
+import { handleWebVitals } from '../../../../utils/telemetry/InstrumentWebVitals';
 
 const Checkout: NextPage = () => {
   const { query } = useRouter();
   const { items = [], shippingAddress } = JSON.parse((query.order || '{}') as string) as IProductCheckout;
+
+  // console.log('collect core web vitals in checkout[orderid]');
+  useEffect(() => {
+    onCLS(handleWebVitals);
+    onINP(handleWebVitals);
+    onLCP(handleWebVitals);
+    onTTFB(handleWebVitals);
+    onFCP(handleWebVitals);
+  }, []);
 
   return (
     <AdProvider
