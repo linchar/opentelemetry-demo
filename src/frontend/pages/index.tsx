@@ -12,6 +12,9 @@ import ApiGateway from '../gateways/Api.gateway';
 import Banner from '../components/Banner';
 import { CypressFields } from '../utils/Cypress';
 import { useCurrency } from '../providers/Currency.provider';
+import { useEffect } from 'react';
+import { onCLS, onINP, onLCP, onTTFB, onFCP } from 'web-vitals';
+import { handleWebVitals } from '../utils/telemetry/InstrumentWebVitals';
 
 const Home: NextPage = () => {
   const { selectedCurrency } = useCurrency();
@@ -19,6 +22,16 @@ const Home: NextPage = () => {
     queryKey: ['products', selectedCurrency],
     queryFn: () => ApiGateway.listProducts(selectedCurrency),
   });
+
+  // console.log('collect core web vitals in main');
+  useEffect(() => {
+    onCLS(handleWebVitals);
+    onINP(handleWebVitals);
+    onLCP(handleWebVitals);
+    onTTFB(handleWebVitals);
+    onFCP(handleWebVitals);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Layout>
