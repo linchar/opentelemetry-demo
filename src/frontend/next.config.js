@@ -77,7 +77,7 @@ module.exports = withSentryConfig(
     // For all available options, see:
     // https://github.com/getsentry/sentry-webpack-plugin#options
 
-    org: "chronosphere",
+    org: "chronosphere-sentry-demo",
     project: "otel-demo-frontend-web",
 
     // Only print logs for uploading source maps in CI
