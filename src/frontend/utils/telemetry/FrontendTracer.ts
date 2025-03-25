@@ -11,6 +11,8 @@ import { ATTR_SERVICE_NAME, SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemet
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SessionIdProcessor } from './SessionIdProcessor';
 import { detectResourcesSync } from '@opentelemetry/resources/build/src/detect-resources';
+import { ZoneContextManager } from '@opentelemetry/context-zone';
+import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch';
 
 const {
   NEXT_PUBLIC_OTEL_SERVICE_NAME = '',
@@ -74,6 +76,21 @@ const FrontendTracer = async () => {
         '@opentelemetry/instrumentation-fetch': {
           propagateTraceHeaderCorsUrls: /.*/,
           clearTimingResources: true,
+
+          // Hook to modify the span before it's recorded
+          requestHook: (span, request) => {
+            // console.log('Capture request headers');
+            // Capture request headers
+            if (request.headers) {
+              if (request.headers instanceof Headers) {
+
+                request.headers.forEach((value, key) => {
+                  // console.log('Capture request header: ', key);
+                  span.setAttribute(`http.request.header.${key}`, value);
+                });
+              }
+            }
+          },
           applyCustomAttributesOnSpan(span) {
             span.setAttribute('app.synthetic_request', IS_SYNTHETIC_REQUEST);
           },
