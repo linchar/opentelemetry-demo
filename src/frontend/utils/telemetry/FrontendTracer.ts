@@ -69,6 +69,9 @@ const FrontendTracer = async () => {
     }),
   });
 
+  // Define the headers we want to collect
+  const COLLECTED_HEADERS = new Set(['cache-control', 'x-envoy-fault-delay-request']);
+
   registerInstrumentations({
     tracerProvider: provider,
     instrumentations: [
@@ -77,16 +80,15 @@ const FrontendTracer = async () => {
           propagateTraceHeaderCorsUrls: /.*/,
           clearTimingResources: true,
 
-          // Hook to modify the span before it's recorded
+          // Hook to add headers to span attributes
           requestHook: (span, request) => {
-            // console.log('Capture request headers');
             // Capture request headers
             if (request.headers) {
               if (request.headers instanceof Headers) {
-
                 request.headers.forEach((value, key) => {
-                  // console.log('Capture request header: ', key);
-                  span.setAttribute(`http.request.header.${key}`, value);
+                  if (COLLECTED_HEADERS.has(key.toLowerCase())) {
+                    span.setAttribute(`http.request.header.${key}`, value);
+                  }
                 });
               }
             }
