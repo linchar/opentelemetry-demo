@@ -32,16 +32,19 @@ async function getIP(): Promise<string> {
   return cachedIP;
 }
 
+// move resource outside of FrontendTracer because it is used in web-vitals
+let resource = new Resource({
+  [ATTR_SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
+  [SEMRESATTRS_SERVICE_INSTANCE_ID]:
+    typeof window !== 'undefined' ? await getIP() : "unknown ip",
+});
+const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
+resource = resource.merge(detectedResources);
+// use resource in other files
+export const frontendResource = resource;
+
 const FrontendTracer = async () => {
   const { ZoneContextManager } = await import('@opentelemetry/context-zone');
-
-  let resource = new Resource({
-    [ATTR_SERVICE_NAME]: NEXT_PUBLIC_OTEL_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]:
-      typeof window !== 'undefined' ? await getIP() : "unknown ip",
-  });
-  const detectedResources = detectResourcesSync({ detectors: [browserDetector] });
-  resource = resource.merge(detectedResources);
 
   const provider = new WebTracerProvider({
     resource,
