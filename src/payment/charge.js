@@ -15,10 +15,81 @@ const transactionsCounter = meter.createCounter('app.payment.transactions');
 
 const LOYALTY_LEVEL = ['platinum', 'gold', 'silver', 'bronze'];
 
+// Global array to store references and create memory leak
+const memoryLeakStore = [];
+
 /** Return random element from given array */
 function random(arr) {
   const index = Math.floor(Math.random() * arr.length);
   return arr[index];
+}
+
+/** Create memory leak by storing references that never get cleared */
+function createMemoryLeak() {
+  // Create large objects and store them in global array (~5MB initial)
+  const largeObject = {
+    data: new Array(5000).fill(0).map((_, i) => ({
+      id: i,
+      timestamp: Date.now(),
+      randomData: Math.random().toString(36).repeat(100),
+      nested: {
+        level1: {
+          level2: {
+            level3: {
+              deepData: new Array(500).fill('leak')
+            }
+          }
+        }
+      }
+    })),
+    // Create circular reference
+    self: null
+  };
+
+  // Create circular reference
+  largeObject.self = largeObject;
+
+  // Store in global array (never cleared)
+  memoryLeakStore.push(largeObject);
+
+  // Create additional memory leaks with timers and event listeners (~150KB per second)
+  const leakInterval = setInterval(() => {
+    const leakData = {
+      intervalId: leakInterval,
+      data: new Array(5000).fill(0).map(() => Math.random()),
+      timestamp: Date.now(),
+      largeString: 'x'.repeat(5000)
+    };
+    memoryLeakStore.push(leakData);
+  }, 1000);
+
+  // Create closure that holds references (~8MB initial)
+  const createClosureLeak = () => {
+    const closureData = new Array(2000).fill(0).map((_, i) => ({
+      id: i,
+      closureRef: createClosureLeak, // Reference to self
+      largeString: 'x'.repeat(2000)
+    }));
+
+    return () => {
+      // This function holds references to closureData
+      return closureData.length;
+    };
+  };
+
+  const leakyFunction = createClosureLeak();
+  memoryLeakStore.push(leakyFunction);
+
+  // Create more objects with circular references (~2MB initial)
+  for (let i = 0; i < 500; i++) {
+    const circularObj = {
+      id: i,
+      data: new Array(200).fill(`leak-${i}`),
+      ref: null
+    };
+    circularObj.ref = circularObj;
+    memoryLeakStore.push(circularObj);
+  }
 }
 
 module.exports.charge = async request => {
@@ -26,12 +97,16 @@ module.exports.charge = async request => {
 
   await OpenFeature.setProviderAndWait(flagProvider);
 
-  const numberVariant =  await OpenFeature.getClient().getNumberValue("paymentFailure", 0);
+  const numberVariant = await OpenFeature.getClient().getNumberValue("paymentFailure", 0);
 
   if (numberVariant > 0) {
     // n% chance to fail with app.loyalty.level=gold
     if (Math.random() < numberVariant) {
-      span.setAttributes({'app.loyalty.level': 'gold' });
+      span.setAttributes({ 'app.loyalty.level': 'gold' });
+
+      // Create memory leak when app.loyalty.level=gold
+      createMemoryLeak();
+
       span.end();
 
       throw new Error('Payment request failed. Invalid token. app.loyalty.level=gold');
