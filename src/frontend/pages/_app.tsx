@@ -12,6 +12,7 @@ import FrontendTracer from '../utils/telemetry/FrontendTracer';
 import SessionGateway from '../gateways/Session.gateway';
 import { OpenFeatureProvider, OpenFeature } from '@openfeature/react-sdk';
 import { FlagdWebProvider } from '@openfeature/flagd-web-provider';
+import { getNavigationInstrumentation, initSDK } from '@embrace-io/web-sdk';
 
 declare global {
   interface Window {
@@ -25,6 +26,12 @@ declare global {
 }
 
 if (typeof window !== 'undefined') {
+  initSDK({
+    appID: 'cvrgz',
+    appVersion: '2.1.3-charles',
+    instrumentations: [getNavigationInstrumentation()],
+  });
+
   FrontendTracer();
   if (window.location) {
     const session = SessionGateway.getSession();
@@ -39,7 +46,7 @@ if (typeof window !== 'undefined') {
       const useTLS = window.location.protocol === 'https:';
       let port = useTLS ? 443 : 80;
       if (window.location.port) {
-          port = parseInt(window.location.port, 10);
+        port = parseInt(window.location.port, 10);
       }
 
       OpenFeature.setProvider(
@@ -59,6 +66,15 @@ if (typeof window !== 'undefined') {
 const queryClient = new QueryClient();
 
 function MyApp({ Component, pageProps }: AppProps) {
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   getNavigationInstrumentation().setCurrentRoute({
+  //     url: router.asPath,
+  //     name: router.route,
+  //   });
+  // }, [router]);
+
   return (
     <ThemeProvider theme={Theme}>
       <OpenFeatureProvider>
